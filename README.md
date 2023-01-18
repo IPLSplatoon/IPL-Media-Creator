@@ -1,5 +1,5 @@
-# IPL Stream Highlight Creator 🎥
-A Discord bot application that takes a twitch clip link, adds an intro overlay to it, and uploads as a downloadable video to discord. Intended to assist creating tournament highlights for IPL's social media pages.
+# IPL Media Creator 🎥
+A Discord bot application that can create downloadable highlights from our livestreams. It can also create other graphics quickly.
 
 #### Required To Run:
 - [Node.js](https://nodejs.org/en/)
