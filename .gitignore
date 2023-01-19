@@ -7,3 +7,5 @@ ffmpegTest.js
 browserTest.js
 s3test.js
 concattest.js
+highlight-overlays
+graphic-templates

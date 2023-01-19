@@ -3,6 +3,8 @@ const fs = require('fs');
 const { Client, Intents, Collection } = require('discord.js');
 const { token } = require("./config.json");
 
+console.log("Logging into bot...\nDon't forget to run deploy-commands.js if you made changes to any config files!");
+
 //create a new client instance
 const client = new Client({
     intents: [Intents.FLAGS.GUILDS]
@@ -19,7 +21,7 @@ for (const file of commandFiles) {
 
 //run this when this client is ready
 client.once('ready', () => {
-    console.log("Ready");
+    console.log("Logged in: Awaiting commands.");
 });
 
 //runs whenever there is an interaction (eg. a command is run)

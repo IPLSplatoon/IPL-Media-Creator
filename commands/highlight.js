@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder, SlashCommandStringOption } = require('@discordjs/builders');
 const puppeteer = require('puppeteer');
 var ffmpeg = require("fluent-ffmpeg");
 const { encoder, s3_keyId, s3_bucket, s3_endpoint, s3_path, s3_secretAccessKey, s3_url } = require("../config.json");
@@ -17,25 +17,50 @@ var ep = new AWS.Endpoint(s3_endpoint);
 var s3 = new AWS.S3({endpoint: ep});
 
 //create the data found in the slash command
-const data = new SlashCommandBuilder()
-    .setName("highlight")
-    .setDescription("Creates a downloadable stream highlight from a twitch clip.")
-    .addStringOption(option =>
-        option.setName('tournament')
-            .setDescription('Specify which tournament this clip is from.')
-            .setRequired(true)
-            .addChoice("IPL", "ipl")
-            .addChoice("Low Ink", "low_ink")
-            .addChoice("Swim or Sink", "swim_or_sink")
-            .addChoice("Splatoon Advanced Circuit", "sac")
-            .addChoice("Proving Grounds", "pg")
-    )
-    .addStringOption(option =>
-        option.setName('link')
-            .setDescription("Attach an IPL Twitch clip link.")
-            .setRequired(true)
-    );
+// const data = new SlashCommandBuilder()
+//     .setName("highlight")
+//     .setDescription("Creates a downloadable stream highlight from a twitch clip.")
+//     .addStringOption(option =>
+//         option.setName('tournament')
+//             .setDescription('Specify which tournament this clip is from.')
+//             .setRequired(true)
+//             .addChoice("IPL", "ipl")
+//             .addChoice("Low Ink", "low_ink")
+//             .addChoice("Swim or Sink", "swim_or_sink")
+//             .addChoice("Splatoon Advanced Circuit", "sac")
+//             .addChoice("Proving Grounds", "pg")
+//     )
+//     .addStringOption(option =>
+//         option.setName('link')
+//             .setDescription("Attach an IPL Twitch clip link.")
+//             .setRequired(true)
+//     );
 
+const data = getThisCommand();
+
+function getThisCommand() {
+    let options = new SlashCommandStringOption()
+        .setName("tournament")
+        .setRequired(true)
+        .setDescription('Specify which tournament this clip is from.');
+
+    const highlightOverlaysConfig = require("../highlight-overlays/highlight-overlays-config.json");
+    for (let i = 0; i < highlightOverlaysConfig.length; i++){
+        options.addChoice(highlightOverlaysConfig[i].name, highlightOverlaysConfig[i].overlay);
+    }
+
+    let builder = new SlashCommandBuilder()
+        .setName("highlight")
+        .setDescription("Creates a downloadable stream highlight from a twitch clip.")
+        .addStringOption(options)
+        .addStringOption(option =>
+            option.setName('link')
+                .setDescription("Attach an IPL Twitch clip link.")
+                .setRequired(true)
+        );
+
+    return builder;
+}
 
 
 function ffmpegOverlayer(file, tourney) {
