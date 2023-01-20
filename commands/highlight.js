@@ -16,25 +16,7 @@ AWS.config.credentials = {
 var ep = new AWS.Endpoint(s3_endpoint);
 var s3 = new AWS.S3({endpoint: ep});
 
-//create the data found in the slash command
-// const data = new SlashCommandBuilder()
-//     .setName("highlight")
-//     .setDescription("Creates a downloadable stream highlight from a twitch clip.")
-//     .addStringOption(option =>
-//         option.setName('tournament')
-//             .setDescription('Specify which tournament this clip is from.')
-//             .setRequired(true)
-//             .addChoice("IPL", "ipl")
-//             .addChoice("Low Ink", "low_ink")
-//             .addChoice("Swim or Sink", "swim_or_sink")
-//             .addChoice("Splatoon Advanced Circuit", "sac")
-//             .addChoice("Proving Grounds", "pg")
-//     )
-//     .addStringOption(option =>
-//         option.setName('link')
-//             .setDescription("Attach an IPL Twitch clip link.")
-//             .setRequired(true)
-//     );
+
 
 const data = getThisCommand();
 
@@ -69,7 +51,7 @@ function ffmpegOverlayer(file, tourney) {
         var fileName = tourney + Date.now() + fileNameOut;
 
             ffmpeg().withOptions([
-                "-i ./overlays/" + tourney + ".png", //take the overlay as an input
+                "-i ./highlight-overlays/" + tourney + ".png", //take the overlay as an input
                 "-i " + file, //take the twitch clip as an input
                 ])
                 .complexFilter([
