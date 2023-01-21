@@ -16,19 +16,26 @@ const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('
 
 for (const file of commandFiles) {
     const command = require(`./commands/${file}`);
-    client.commands.set(command.data.name, command);
+    client.commands.set(file.replace(".js", ""), command);
 }
 
 //run this when this client is ready
 client.once('ready', () => {
-    console.log("Logged in: Awaiting commands.");
+    console.log("Logged in! Awaiting commands.");
 });
 
 //runs whenever there is an interaction (eg. a command is run)
 client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
 
-	const command = client.commands.get(interaction.commandName);
+	console.log(client.commands);
+
+	let command;
+	if (interaction.commandName.includes("graphic-")){
+		command = client.commands.get("graphic");
+	} else {
+		command = client.commands.get(interaction.commandName);
+	}
 
 	if (!command) return;
 

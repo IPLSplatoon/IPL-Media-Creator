@@ -41,7 +41,7 @@ function getThisCommand() {
                 .setRequired(true)
         );
 
-    return builder;
+    return builder.toJSON();
 }
 
 

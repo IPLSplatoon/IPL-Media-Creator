@@ -21,7 +21,8 @@ const data = new SlashCommandBuilder()
         option.setName('clips')
             .setDescription('Add urls to twitch clips, seperated by spaces')
             .setRequired(true)
-    );
+    )
+    .toJSON();
 
     const ffmpeg = require('fluent-ffmpeg');
 
