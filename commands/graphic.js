@@ -63,8 +63,10 @@ module.exports = {
         await page.setViewport({ width: subCommandConfig.width, height: subCommandConfig.height });
         await page.goto(path);
         const screenshot = await page.screenshot({type: "jpeg", quality: 100});
+        await browser.close();
         
         const attachment = new MessageAttachment(screenshot);
         await interaction.reply({files: [attachment]})
+
     }
 }
