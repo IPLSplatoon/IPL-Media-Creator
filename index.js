@@ -28,8 +28,6 @@ client.once('ready', () => {
 client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
 
-	console.log(client.commands);
-
 	let command;
 	if (interaction.commandName.includes("graphic-")){
 		command = client.commands.get("graphic");

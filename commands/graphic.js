@@ -37,14 +37,12 @@ function getThisCommand() {
 module.exports = {
     data,
     async execute(interaction) {
-        console.log("got graphic command");
         const config = require("../graphic-templates/graphic-templates-config.json");
         const commandName = interaction.commandName.split("-").pop();
 
         const commandConfig = config.find(o => o.name === commandName);
         const subCommandConfig = commandConfig.options.find(o => o.name === interaction.options.getSubcommand());
         
-        console.log(commandConfig, subCommandConfig);
         const commandOptions = [];
         for (let i = 0; i < subCommandConfig.options.length; i++){
             const commandOptionName = subCommandConfig.options[i].name;
@@ -62,11 +60,11 @@ module.exports = {
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
         const path = `file://${process.cwd()}/graphic-templates/${commandConfig.name}-${subCommandConfig.name}.html${uri}`
-        console.log("path: ", path);
         await page.setViewport({ width: subCommandConfig.width, height: subCommandConfig.height });
         await page.goto(path);
-        await page.screenshot({ path: "test.png" });
-        const attachment = new MessageAttachment('test.png');
-        await interaction.reply({files: [attachment]});
+        const screenshot = await page.screenshot({type: "jpeg", quality: 100});
+        
+        const attachment = new MessageAttachment(screenshot);
+        await interaction.reply({files: [attachment]})
     }
 }

@@ -50,36 +50,36 @@ function ffmpegOverlayer(file, tourney) {
 
         var fileName = tourney + Date.now() + fileNameOut;
 
-            ffmpeg().withOptions([
-                "-i ./highlight-overlays/" + tourney + ".png", //take the overlay as an input
-                "-i " + file, //take the twitch clip as an input
-                ])
-                .complexFilter([
-                    {
-                    "filter":"scale", "options":{s:"1280x720"}, "inputs":"[1:v]", "outputs":"[base]" //resize the twitch clip to 720p
-                    },
-                    {
-                    "filter":"overlay", "inputs":"[0:v][base]" //overlay the overlay onto the twitch clip
-                    }
-                ])
-                .withOptions([
-                    "-r 60",
-                    "-crf 31",
-                    "-c:v " + encoder //encode the video
-                ])
-            .on('start', function(){
-                console.log("starting ffmpeg with input " + file + " and overlay " + tourney);
-            })
-            .on('error', function(err) {
-                console.log('An ffmpeg error occurred: ' + err.message);
-                deleteFile(fileName)
-                return reject(new Error(err), fileName);
-            })
-            .on('end', function(){
-                console.log("ffmpeg is done!");
-                resolve(fileName);
-            })
-            .save(fileName);
+        ffmpeg().withOptions([
+            "-i ./highlight-overlays/" + tourney + ".png", //take the overlay as an input
+            "-i " + file, //take the twitch clip as an input
+            ])
+            .complexFilter([
+                {
+                "filter":"scale", "options":{s:"1280x720"}, "inputs":"[1:v]", "outputs":"[base]" //resize the twitch clip to 720p
+                },
+                {
+                "filter":"overlay", "inputs":"[0:v][base]" //overlay the overlay onto the twitch clip
+                }
+            ])
+            .withOptions([
+                "-r 60",
+                "-crf 31",
+                "-c:v " + encoder //encode the video
+            ])
+        .on('start', function(){
+            console.log("starting ffmpeg with input " + file + " and overlay " + tourney);
+        })
+        .on('error', function(err) {
+            console.log('An ffmpeg error occurred: ' + err.message);
+            deleteFile(fileName)
+            return reject(new Error(err), fileName);
+        })
+        .on('end', function(){
+            console.log("ffmpeg is done!");
+            resolve(fileName);
+        })
+        .save(fileName);
     });
 }
 
