@@ -61,7 +61,7 @@ module.exports = {
         const page = await browser.newPage();
         const path = `file://${process.cwd()}/graphic-templates/${commandConfig.name}-${subCommandConfig.name}.html${uri}`
         await page.setViewport({ width: subCommandConfig.width, height: subCommandConfig.height });
-        await page.goto(path);
+        await page.goto(path, {"waitUntil" : "networkidle0"});
         const screenshot = await page.screenshot({type: "jpeg", quality: 100});
         await browser.close();
         
