@@ -37,6 +37,7 @@ function getThisCommand() {
 module.exports = {
     data,
     async execute(interaction) {
+        await interaction.deferReply();
         const config = require("../graphic-templates/graphic-templates-config.json");
         const commandName = interaction.commandName.split("-").pop();
 
@@ -66,7 +67,6 @@ module.exports = {
         await browser.close();
         
         const attachment = new MessageAttachment(screenshot);
-        await interaction.reply({files: [attachment]})
-
+        await interaction.editReply({files: [attachment]});
     }
 }

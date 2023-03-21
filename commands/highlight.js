@@ -3,7 +3,7 @@ const puppeteer = require('puppeteer');
 var ffmpeg = require("fluent-ffmpeg");
 const { encoder, s3_keyId, s3_bucket, s3_endpoint, s3_path, s3_secretAccessKey, s3_url } = require("../config.json");
 
-const fileNameOut = "_hl.mp4";
+const fileNameOut = "_hlTESTING.mp4";
 
 
 //create s3 server data
@@ -169,11 +169,7 @@ module.exports = {
                         }
                         if (data){
                             console.log("Uploaded file", data.Location);
-                            var fileLoc = data.Location;
-                            if (!fileLoc.includes("https")){
-                                fileLoc = s3_url + fileLoc;
-                            }
-                            interaction.editReply(fileLoc);
+                            interaction.editReply("https://files.iplabs.work/file/iplabs-public/StreamHighlights/" + fileName);
                             deleteFile(fileName);
                         }
                     });
