@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const puppeteer = require('puppeteer');
-const { encoder, s3_keyId, s3_bucket, s3_endpoint, s3_path, s3_secretAccessKey, s3_url } = require("../config.json");
+const { encoder, s3_keyId, s3_bucket, s3_endpoint, s3_path, s3_secretAccessKey, radiaGuildId, radiaAuth } = require("../config.json");
+const fetch = require('node-fetch');
+const ffmpeg = require('fluent-ffmpeg');
 
 const fileNameOut = "_comp.mp4";
 
@@ -24,7 +25,6 @@ const data = new SlashCommandBuilder()
     )
     .toJSON();
 
-    const ffmpeg = require('fluent-ffmpeg');
 
 async function getDuration(file){
     return new Promise((resolve, reject) => {
@@ -154,6 +154,7 @@ module.exports = {
 
         const clipInput = interaction.options.getString('clips')
         const clips = clipInput.split(' ');
+        let clipIDs = [];
         
         //make sure these are twitch links
         for(let i = 0; i < clips.length; i++){
@@ -170,36 +171,23 @@ module.exports = {
         //tell both discord and the end user this might take a while
         await interaction.deferReply();
 
+        for (const clip of clips) {
+            clipIDs.push(clip.split("/").pop());
+        }
+
         try{
             //launch a headless browser and load the twitch page
             var sources = [];
-            try{
-                console.log("launching headless browser.");
-                const browser = await puppeteer.launch();
-
-                for (let i = 0; i < clips.length; i++){
-                    const page = await browser.newPage();
-                    await page.goto(clips[i], { waitUntil: 'networkidle0' });
-                    console.log("page loaded, finding and getting video source.");
-
-                    //get the source link of the video
-                    const sourcelink = await page.evaluate(() => {
-                        return document.querySelector("video").currentSrc;
-                    });
-
-                    //we gotta change the link a bit before we can process it
-                    var vidIdSplit = sourcelink.split('?')[0].split('/');
-                    var vidId = vidIdSplit.at(-1);
-                    var vidId2 = vidIdSplit.at(-2);
-                    sources.push(`https://clips-media-assets2.twitch.tv/${vidId2}/${vidId}`);
-                }
-                
-                await browser.close();
-            } catch (err) {
-                await interaction.editReply("There was an error getting a clip from twitch!\n`" + err + "`");
-                return;
+            for (const clipID of clipIDs) {
+                await getClipDownloadURL(clipID)
+                .then(function(url){
+                    sources.push(url);
+                })
+                .catch(function(err){
+                    console.log("getClipDownloadURL was rejected: " + err);
+                    interaction.editReply("There was an error processing this clip!\n`" + err + "`");
+                });
             }
-
             
             //ffmpeg time
             await startConcat(sources)
@@ -217,19 +205,15 @@ module.exports = {
                     var path = require('path');
                     uploadParams.Key = s3_path + path.basename(fileName);
 
-                    s3.upload(uploadParams, function(err,data){
-                        if (err){
-                            console.log("Upload Error",err);
+                    s3.upload(uploadParams, function (err, data) {
+                        if (err) {
+                            console.log("Upload Error", err);
                             interaction.editReply("There was an error uploading to the server!");
                             deleteFile(fileName);
                         }
-                        if (data){
+                        if (data) {
                             console.log("Uploaded file", data.Location);
-                            var fileLoc = data.Location;
-                            if (!fileLoc.includes("https")){
-                                fileLoc = s3_url + fileLoc;
-                            }
-                            interaction.editReply(fileLoc);
+                            interaction.editReply("https://files.iplabs.work/file/iplabs-public/StreamHighlights/" + fileName);
                             deleteFile(fileName);
                         }
                     });
@@ -251,5 +235,32 @@ function deleteFile(fileName){
         if (err) { 
             console.log(err); 
         }
+    });
+}
+
+async function getClipDownloadURL(clipID) {
+    console.log(`Getting download URL from ${clipID}`)
+    return fetch(`https://radia.iplabs.work/clips/${radiaGuildId}/${clipID}`, {
+        method: 'POST',
+        headers: {
+            Authorization: radiaAuth
+        }
+    })
+    .then(res => {
+        console.log("res", res);
+        if (res.ok) {
+            return res.json();
+        } else {
+            throw new Error('Clip ID not found');
+        }
+    })
+    .then(json => {
+        console.log("json", json);
+        const downloadID = json[0].thumbnail_url.match(/(?<=twitch.tv\/)(.*)(?=-preview)/)[0]
+        console.log("downloadID", downloadID);
+        if (downloadID !== null) {
+            return `https://clips-media-assets2.twitch.tv/${downloadID}.mp4`;
+        }
+        throw new Error('Clip download URL not found');
     });
 }
