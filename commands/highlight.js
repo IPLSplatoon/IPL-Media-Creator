@@ -3,7 +3,7 @@ var ffmpeg = require("fluent-ffmpeg");
 const { encoder, s3_keyId, s3_bucket, s3_endpoint, s3_path, s3_secretAccessKey, radiaGuildId, radiaAuth } = require("../config.json");
 const fetch = require('node-fetch');
 
-const fileNameOut = "_hlTESTING.mp4";
+const fileNameOut = "_hl.mp4";
 
 
 //create s3 server data
