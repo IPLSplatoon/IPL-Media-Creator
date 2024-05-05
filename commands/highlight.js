@@ -44,14 +44,27 @@ function getThisCommand() {
     return builder.toJSON();
 }
 
+function getOverlayHeight(overlayPath) {
+    return new Promise((resolve, reject) => {
+        ffmpeg.ffprobe(overlayPath, (err, data) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(data.streams[0].height);
+            }
+        });
+    })
+}
 
 function ffmpegOverlayer(file, tourney) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
 
         var fileName = tourney + Date.now() + fileNameOut;
+        const overlayPath = "./highlight-overlays/" + tourney + ".png";
+        const overlayHeight = await getOverlayHeight(overlayPath);
 
         ffmpeg().withOptions([
-            "-i ./highlight-overlays/" + tourney + ".png", //take the overlay as an input
+            "-i " + overlayPath, //take the overlay as an input
             "-i " + file, //take the twitch clip as an input
         ])
             .complexFilter([
@@ -59,7 +72,10 @@ function ffmpegOverlayer(file, tourney) {
                     "filter": "scale", "options": { s: "1280x720" }, "inputs": "[1:v]", "outputs": "[base]" //resize the twitch clip to 720p
                 },
                 {
-                    "filter": "overlay", "inputs": "[0:v][base]" //overlay the overlay onto the twitch clip
+                    "filter": "pad", "options": { width: "1280", height: overlayHeight, x: "0", y: "0" }, "inputs": "[base]", "outputs": "[base_padded]"
+                },
+                {
+                    "filter": "overlay", "inputs": "[base_padded][0:v]" //overlay the overlay onto the twitch clip
                 }
             ])
             .withOptions([
